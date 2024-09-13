@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Advanced Code Editor with Multiple Modes and Themes</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.34.1/min/vs/loader.min.js"></script>
+    <style>
+      body,
+      html {
+        margin: 0;
+        padding: 0;
+        height: 100%;
+        overflow: hidden;
+        font-family: Arial, sans-serif;
+      }
+      #container {
+        display: flex;
+        height: 100vh;
+        width: 100vw;
+      }
+      #editor-container,
+      #output {
+        height: 100%;
+        overflow: hidden;
+        transition: width 0.05s ease;
+      }
+      #editor-container {
+        position: relative;
+        width: 50%;
+        display: flex;
+        flex-direction: column;
+      }
+      #file-explorer {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 200px;
+        height: 100%;
+        transform: translateX(-100%);
+        transition: transform 0.3s ease;
+        z-index: 10;
+      }
+      #file-explorer.visible {
+        transform: translateX(0);
+      }
+      #file-explorer ul {
+        list-style-type: none;
+        padding: 10px;
+      }
+      #file-explorer li {
+        cursor: pointer;
+        padding: 5px;
+        margin-bottom: 5px;
+      }
+      #editor {
+        flex-grow: 1;
+      }
+      #split-gutter {
+        width: 5px;
+        cursor: col-resize;
+        transition: background-color 0.3s ease;
+      }
+      #split-gutter:hover,
+      #split-gutter.active {
+        background-color: #0e639c;
+      }
+      #output {
+        width: calc(50% - 5px);
+        padding: 0;
+        box-sizing: border-box;
+        overflow: hidden;
+      }
+      #mode-switch,
+      #theme-selector,
+      #language-toggle {
+        position: absolute;
+        top: 10px;
+        z-index: 20;
+        border: none;
+        padding: 5px 10px;
+        cursor: pointer;
+      }
+      #mode-switch {
+        right: 10px;
+      }
+      #theme-selector {
+        right: 150px;
+      }
+      #language-toggle {
+        right: 290px;
+      }
+      #mode-switch:hover,
+      #theme-selector:hover,
+      #language-toggle:hover {
+        opacity: 0.8;
+      }
+      iframe {
+        width: 100%;
+        height: 100%;
+        border: none;
+        display: block;
+      }
+      #resize-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        display: none;
+        z-index: 1000;
+      }
+      .output-line {
+        margin: 0;
+        padding: 1px 0;
+      }
+      .output-line.error {
+        color: #ff0000;
+      }
+      .output-line.log {
+        color: #00ff00;
+      }
+      #tabs {
+        display: flex;
+        background-color: #1e1e1e;
+        padding: 5px 5px 0 5px;
+      }
+      .tab {
+        padding: 5px 10px;
+        margin-right: 5px;
+        background-color: #2d2d2d;
+        color: #d4d4d4;
+        cursor: pointer;
+        border-top-left-radius: 5px;
+        border-top-right-radius: 5px;
+        display: flex;
+        align-items: center;
+      }
+      .tab.active {
+        background-color: #1e1e1e;
+      }
+      .tab-close {
+        margin-left: 5px;
+        color: #808080;
+        font-size: 14px;
+      }
+      .tab-close:hover {
+        color: #d4d4d4;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="container">
+      <div id="editor-container">
+        <div id="file-explorer">
+          <ul>
+            <li data-file="html">HTML</li>
+            <li data-file="css">CSS</li>
+            <li data-file="js">JavaScript/TypeScript</li>
+          </ul>
+        </div>
+        <div id="tabs"></div>
+        <div id="editor"></div>
+        <button id="mode-switch">Switch to CodePen Mode</button>
+        <select id="theme-selector">
+          <option value="vs">Visual Studio</option>
+          <option value="vs-dark">Visual Studio Dark</option>
+          <option value="hc-black">High Contrast Black</option>
+          <option value="hc-light">High Contrast Light</option>
+          <option value="github">GitHub</option>
+          <option value="monokai">Monokai</option>
+          <option value="solarized-dark">Solarized Dark</option>
+          <option value="solarized-light">Solarized Light</option>
+          <option value="abyss">Abyss</option>
+          <option value="kimbie-dark">Kimbie Dark</option>
+          <option value="dracula">Dracula</option>
+          <option value="nord">Nord</option>
+          <option value="tomorrow-night-blue">Tomorrow Night Blue</option>
+          <option value="red">Red</option>
+          <option value="synthwave-84">Synthwave '84</option>
+        </select>
+        <button id="language-toggle">Switch to TypeScript</button>
+      </div>
+      <div id="split-gutter"></div>
+      <div id="output"></div>
+    </div>
+    <div id="resize-overlay"></div>
+
+    <script src="script.js"></script>
+  </body>
+</html>
