@@ -160,12 +160,12 @@ require(['vs/editor/editor.main'], function() {
         fileExplorer.style.backgroundColor = colors.bg;
         fileExplorer.style.color = colors.color;
         splitGutter.style.backgroundColor = colors.color;
-        modeSwitch.style.backgroundColor = colors.color;
-        modeSwitch.style.color = colors.bg;
-        themeSelector.style.backgroundColor = colors.color;
-        themeSelector.style.color = colors.bg;
-        languageToggle.style.backgroundColor = colors.color;
-        languageToggle.style.color = colors.bg;
+        modeSwitch.style.backgroundColor = colors.bg;
+        modeSwitch.style.color = colors.color;
+        themeSelector.style.backgroundColor = colors.bg;
+        themeSelector.style.color = colors.color;
+        languageToggle.style.backgroundColor = colors.bg;
+        languageToggle.style.color = colors.color;
         tabsContainer.style.backgroundColor = colors.bg;
         document.querySelectorAll('.tab').forEach(tab => {
             tab.style.backgroundColor = tab.classList.contains('active') ? colors.bg : '#2d2d2d';
@@ -202,6 +202,15 @@ require(['vs/editor/editor.main'], function() {
         editor.setValue(files[file]);
         monaco.editor.setModelLanguage(editor.getModel(), file === 'js' ? currentLanguage : file);
         updateActiveTabs();
+
+        // New code: Update the file explorer to highlight the current file
+        document.querySelectorAll('#file-explorer li').forEach(li => {
+            if (li.getAttribute('data-file') === file) {
+                li.classList.add('active');
+            } else {
+                li.classList.remove('active');
+            }
+        });
     }
 
     function closeTab(file) {
@@ -226,14 +235,36 @@ require(['vs/editor/editor.main'], function() {
         });
     }
 
+    function updateLanguageToggle() {
+        if (currentMode === 'js') {
+            languageToggle.innerHTML = currentLanguage === 'javascript' 
+                ? '<i class="fab fa-js"></i>' 
+                : 'TS';
+        } else {
+            languageToggle.innerHTML = '<i class="fab fa-js"></i>';
+        }
+        languageToggle.title = `Switch to ${currentLanguage === 'javascript' ? 'TypeScript' : 'JavaScript'}`;
+    }
+
     editor.onDidChangeModelContent(updateOutput);
     updateOutput();
 
     modeSwitch.addEventListener('click', () => {
+        const previousMode = currentMode;
         currentMode = currentMode === 'js' ? 'codepen' : 'js';
-        modeSwitch.textContent = currentMode === 'js' ? 'Switch to CodePen Mode' : 'Switch to JS Mode';
+        modeSwitch.innerHTML = currentMode === 'js' 
+            ? '<i class="fas fa-code"></i>' 
+            : '<i class="fas fa-columns"></i>';
+        modeSwitch.title = currentMode === 'js' ? 'Switch to CodePen Mode' : 'Switch to JS Mode';
         fileExplorer.style.display = currentMode === 'js' ? 'none' : 'block';
         languageToggle.style.display = currentMode === 'js' ? 'block' : 'none';
+        updateLanguageToggle();
+
+        // New code: Automatically switch to JS file when changing to JS-only mode
+        if (previousMode === 'codepen' && currentMode === 'js') {
+            switchToFile('js');
+        }
+
         updateOutput();
         editor.layout();
         updateTheme(currentTheme);
@@ -243,19 +274,22 @@ require(['vs/editor/editor.main'], function() {
         updateTheme(e.target.value);
     });
 
+
+    
     languageToggle.addEventListener('click', () => {
         currentLanguage = currentLanguage === 'javascript' ? 'typescript' : 'javascript';
-        languageToggle.textContent = `Switch to ${currentLanguage === 'javascript' ? 'TypeScript' : 'JavaScript'}`;
+        updateLanguageToggle();
         monaco.editor.setModelLanguage(editor.getModel(), currentLanguage);
         updateOutput();
     });
 
     fileExplorer.addEventListener('click', (e) => {
-        if (e.target.tagName === 'LI') {
-            const file = e.target.getAttribute('data-file');
+        if (e.target.tagName === 'LI' || e.target.tagName === 'I') {
+            const file = e.target.closest('li').getAttribute('data-file');
             switchToFile(file);
         }
     });
+
 
     // Improved smooth split pane functionality
     let isResizing = false;
@@ -327,7 +361,7 @@ require(['vs/editor/editor.main'], function() {
         }, 300);
     });
 
-    // Initial layout and theme
+     // Initial layout and theme
     editor.layout();
     updateTheme(currentTheme);
 
@@ -382,6 +416,9 @@ require(['vs/editor/editor.main'], function() {
 
     // Initial output update
     updateOutput();
+
+    // Initial language toggle update
+    updateLanguageToggle();
 
     // Load TypeScript
     require(['vs/language/typescript/tsWorker'], function() {
